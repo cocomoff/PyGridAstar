@@ -9,7 +9,7 @@ from matplotlib.collections import LineCollection
 from itertools import product, count
 from heapq import heappush, heappop
 
-from search import astar_path, astar_search
+from search import astar_path, astar_search, bidirectional_mm_search
 
 fn = "grid.txt"
 M = list(map(lambda s: s.strip(), open(fn, "r").readlines()))
@@ -79,7 +79,7 @@ def sample_astar_path():
         plt.close()
 
 
-if __name__ == '__main__':
+def sample_astar_search():
     nodes = list(G.nodes())
     ids = np.random.randint(0, len(nodes))
     idg = np.random.randint(0, len(nodes))
@@ -96,3 +96,22 @@ if __name__ == '__main__':
         t_search = time.time() - t_start
         print(W, cost, t_search)
         print(">", path)
+
+
+if __name__ == '__main__':
+    nodes = list(G.nodes())
+    ids = np.random.randint(0, len(nodes))
+    idg = np.random.randint(0, len(nodes))
+    while ids == idg:
+        idg = np.random.randint(0, len(nodes))
+    s = nodes[ids]
+    g = nodes[idg]
+    print(s, g)
+
+    def h(s1, s2):
+        return abs(s1[0] - s2[0]) + abs(s1[1] - s2[1])
+    cost, path = astar_search(G, s, g, heuristic=h, W=W)
+    print(cost, path)
+
+    cost, path = bidirectional_mm_search(G, s, g, heuristic=None)
+    print(cost, path)
