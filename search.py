@@ -66,9 +66,12 @@ def bidirectional_dijkstra_cost(G, source, target, weight='weight'):
     dist_b = {n: INF for n in G.nodes()}
     dist_f[source] = 0
     dist_b[target] = 0
+    parent_f = {n: None for n in G.nodes()}
+    parent_b = {n: None for n in G.nodes()}
     queue_f, queue_b = PriorityQueue(), PriorityQueue()
     queue_f.push((source, 0), 0)
     queue_b.push((target, 0), 0)
+    meet_point = None
 
     # best score found so far
     U = float("inf")
@@ -85,8 +88,13 @@ def bidirectional_dijkstra_cost(G, source, target, weight='weight'):
             for neighbor, w in G[cur_state].items():
                 cost = w.get(weight, 1)
                 if dist_f[cur_state] + cost < dist_f[neighbor]:
-                    U = min(U, dist_f[cur_state] + cost + dist_b[neighbor])
+                    nU = dist_f[cur_state] + cost + dist_b[neighbor]
+                    if U >= nU:
+                        U = nU
+                        meet_point = neighbor
+                    # U = min(U, dist_f[cur_state] + cost + dist_b[neighbor])
                     dist_f[neighbor] = dist_f[cur_state] + cost
+                    parent_f[neighbor] = cur_state
                     queue_f.push((neighbor, dist_f[neighbor]), dist_f[neighbor])
         else:        # backward search
             cur_state, cur_cost = queue_b.pop()
@@ -95,12 +103,38 @@ def bidirectional_dijkstra_cost(G, source, target, weight='weight'):
             for neighbor, w in G[cur_state].items():
                 cost = w.get(weight, 1)
                 if dist_b[cur_state] + cost < dist_b[neighbor]:
-                    U = min(U, dist_b[cur_state] + cost + dist_f[neighbor])
+                    nU = dist_b[cur_state] + cost + dist_f[neighbor]
+                    if U >= nU:
+                        U = nU
+                        meet_point = neighbor
+                    # U = min(U, dist_b[cur_state] + cost + dist_f[neighbor])
                     dist_b[neighbor] = dist_b[cur_state] + cost
+                    parent_b[neighbor] = cur_state
                     queue_b.push((neighbor, dist_b[neighbor]), dist_b[neighbor])
 
-    return U, None, None
+    # print("[Forward]")
+    # for key in parent_f:
+    #     if parent_f[key] is not None:
+    #         print(key, parent_f[key])
+    # print("[Backward]")
+    # for key in parent_b:
+    #     if parent_b[key] is not None:
+    #         print(key, parent_b[key])
 
+    # traverse meet_point -> source, target
+    path = []
+    n = meet_point
+    while n != source:
+        path.append(n)
+        n = parent_f[n]
+    path.append(source)
+    path = path[::-1]
+    n = parent_b[meet_point]
+    while n != target:
+        path.append(n)
+        n = parent_b[n]
+    path.append(target)
+    return U, path, None
 
 
 def astar_path(G, source, target, heuristic=None, weight='weight', W=1):

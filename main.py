@@ -142,3 +142,5 @@ if __name__ == '__main__':
     cost, path, _ = bidirectional_dijkstra_cost(G, s, g)
     t_bi = time.time() - t_start
     print(cost, t_bi)
+    print()
+    print(cost, path)
