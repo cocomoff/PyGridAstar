@@ -9,7 +9,7 @@ from matplotlib.collections import LineCollection
 from itertools import product, count
 from heapq import heappush, heappop
 
-from search import astar_path, astar_cost_search
+from search import astar_path, astar_search
 
 fn = "grid.txt"
 M = list(map(lambda s: s.strip(), open(fn, "r").readlines()))
@@ -92,7 +92,7 @@ if __name__ == '__main__':
     
     for W in [0, 1, 2, 3]:
         t_start = time.time()
-        cost, path = astar_cost_search(G, s, g, heuristic=h, W=W)
+        cost, path = astar_search(G, s, g, heuristic=h, W=W)
         t_search = time.time() - t_start
         print(W, cost, t_search)
         print(">", path)

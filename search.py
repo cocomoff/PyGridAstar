@@ -61,7 +61,7 @@ def astar_path(G, source, target, heuristic=None, weight='weight', W=1):
             push(queue, (priority, next(c), neighbor, new_cost, curnode))
 
 
-def astar_cost_search(G, source, target, heuristic=None, weight='weight', W=1.0):
+def astar_search(G, source, target, heuristic=None, weight='weight', W=1.0):
     path = []
     visited = set({})
     cur_cost = 0
