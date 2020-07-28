@@ -9,7 +9,7 @@ from matplotlib.collections import LineCollection
 from itertools import product, count
 from heapq import heappush, heappop
 
-from search import astar_path, astar_search, bidirectional_mm_search
+from search import astar_path, astar_search, bidirectional_mm_search, dijkstra, bidirectional_dijkstra_cost, dijkstra_cost
 
 fn = "grid.txt"
 M = list(map(lambda s: s.strip(), open(fn, "r").readlines()))
@@ -98,7 +98,7 @@ def sample_astar_search():
         print(">", path)
 
 
-if __name__ == '__main__':
+def sample_bidirectional_mm_search():
     nodes = list(G.nodes())
     ids = np.random.randint(0, len(nodes))
     idg = np.random.randint(0, len(nodes))
@@ -115,3 +115,30 @@ if __name__ == '__main__':
 
     cost, path = bidirectional_mm_search(G, s, g, heuristic=None)
     print(cost, path)
+
+
+if __name__ == '__main__':
+    nodes = list(G.nodes())
+    ids = np.random.randint(0, len(nodes))
+    idg = np.random.randint(0, len(nodes))
+    while ids == idg:
+        idg = np.random.randint(0, len(nodes))
+    s = nodes[ids]
+    g = nodes[idg]
+    print(s, g)
+    cost, path, visited = dijkstra(G, s, g)
+    print("visited = {}".format(len(visited)))
+    print(cost, path)
+    print()
+
+    # dijkstra cost only
+    t_start = time.time()
+    cost, path, _ = dijkstra_cost(G, s, g)
+    t_uni = time.time() - t_start
+    print(cost, t_uni)
+
+    # bidirectional
+    t_start = time.time()
+    cost, path, _ = bidirectional_dijkstra_cost(G, s, g)
+    t_bi = time.time() - t_start
+    print(cost, t_bi)

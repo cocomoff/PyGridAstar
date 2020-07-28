@@ -7,6 +7,102 @@ from itertools import product, count
 from util import PriorityQueue
 from heapq import heappush, heappop
 
+def dijkstra(G, source, target, weight='weight'):
+    path = []
+    visited = set({})
+    cur_cost = 0
+    cur_state = source
+
+    # Priority queueの初期化
+    pQueue = PriorityQueue()
+    init_entry = (cur_state, [], cur_cost)
+    pQueue.push(init_entry, cur_cost)
+
+    while not pQueue.is_empty():
+        if cur_state == target:
+            path.append(target)
+            break
+        if cur_state not in visited:
+            visited.add(cur_state)
+            for neighbor, w in G[cur_state].items():
+                new_cost = cur_cost + w.get(weight, 1)
+                entry = (neighbor, path + [cur_state], new_cost)
+                pQueue.update(entry, new_cost)
+        (cur_state, path, cur_cost) = pQueue.pop()
+    return cur_cost, path, visited
+
+def dijkstra_cost(G, source, target, weight='weight'):
+    path = []
+    visited = set({})
+    cur_cost = 0
+    cur_state = source
+
+    # Priority queueの初期化
+    pQueue = PriorityQueue()
+    init_entry = (cur_state, cur_cost)
+    pQueue.push(init_entry, cur_cost)
+
+    while not pQueue.is_empty():
+        if cur_state == target:
+            path.append(target)
+            break
+        if cur_state not in visited:
+            visited.add(cur_state)
+            for neighbor, w in G[cur_state].items():
+                new_cost = cur_cost + w.get(weight, 1)
+                entry = (neighbor, new_cost)
+                pQueue.update(entry, new_cost)
+        (cur_state, cur_cost) = pQueue.pop()
+    return cur_cost, None, visited
+
+
+def bidirectional_dijkstra_cost(G, source, target, weight='weight'):
+    path = []
+
+    # forward/backwardの距離とPriority queue
+    # path_f, path_b = [], []
+    INF = 10 ** 10
+    dist_f = {n: INF for n in G.nodes()}
+    dist_b = {n: INF for n in G.nodes()}
+    dist_f[source] = 0
+    dist_b[target] = 0
+    queue_f, queue_b = PriorityQueue(), PriorityQueue()
+    queue_f.push((source, 0), 0)
+    queue_b.push((target, 0), 0)
+
+    # best score found so far
+    U = float("inf")
+    while not queue_f.is_empty() and not queue_b.is_empty():
+        # これ以上よくなる解が存在しない
+        q1 = queue_f.peek()[0]
+        q2 = queue_b.peek()[0]
+        if q1 + q2 >= U:
+            break
+        if q1 <= q2: # forward search
+            cur_state, cur_cost = queue_f.pop()
+            if dist_f[cur_state] > cur_cost:
+                continue
+            for neighbor, w in G[cur_state].items():
+                cost = w.get(weight, 1)
+                if dist_f[cur_state] + cost < dist_f[neighbor]:
+                    U = min(U, dist_f[cur_state] + cost + dist_b[neighbor])
+                    dist_f[neighbor] = dist_f[cur_state] + cost
+                    queue_f.push((neighbor, dist_f[neighbor]), dist_f[neighbor])
+        else:        # backward search
+            cur_state, cur_cost = queue_b.pop()
+            if dist_b[cur_state] > cur_cost:
+                continue
+            for neighbor, w in G[cur_state].items():
+                cost = w.get(weight, 1)
+                if dist_b[cur_state] + cost < dist_b[neighbor]:
+                    U = min(U, dist_b[cur_state] + cost + dist_f[neighbor])
+                    dist_b[neighbor] = dist_b[cur_state] + cost
+                    queue_b.push((neighbor, dist_b[neighbor]), dist_b[neighbor])
+
+    return U, None, None
+
+
+
 def astar_path(G, source, target, heuristic=None, weight='weight', W=1):
     # taken from networkx library
     push, pop = heappush, heappop
