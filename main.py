@@ -105,6 +105,5 @@ if __name__ == '__main__':
         ax.set_title(c)
         plt.gca().invert_yaxis()
         plt.tight_layout()
-        # plt.show()
-        plt.savefig("output_W{}.png".format(W), dpi=150)
+        plt.savefig("output/output_W{}.png".format(W), dpi=150)
         plt.close()
