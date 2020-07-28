@@ -1,3 +1,6 @@
+# -*- coding: utf-8 -*-
+
+import time
 import numpy as np
 import networkx as nx
 import networkx.algorithms as nxa
@@ -5,6 +8,8 @@ import matplotlib.pyplot as plt
 from matplotlib.collections import LineCollection
 from itertools import product, count
 from heapq import heappush, heappop
+
+from search import astar_path, astar_cost_search
 
 fn = "grid.txt"
 M = list(map(lambda s: s.strip(), open(fn, "r").readlines()))
@@ -27,53 +32,7 @@ for (h, w) in product(range(H), range(W)):
             G.add_edge((h, w), (nh, nw))
 
 
-def astar_path(G, source, target, heuristic=None, weight='weight', W=1):
-    push, pop = heappush, heappop
-    if heuristic is None:
-        def heuristic(u, v):
-            return 0
-
-    # Counter
-    c = count()
-    queue = [(0, next(c), source, 0, None)]
-
-    # Open/Close
-    enqueued = {}
-    explored = {}
-    while queue:
-        _, _, curnode, dist, parent = pop(queue)
-        if curnode == target:
-            path = [curnode]
-            node = parent
-            while node is not None:
-                path.append(node)
-                node = explored[node]
-            path.reverse()
-            return path, c, enqueued, explored
-
-        if curnode in explored:
-            if explored[curnode] is None:
-                continue
-            qcost, h = enqueued[curnode]
-            if qcost < dist:
-                continue
-
-        explored[curnode] = parent
-        for neighbor, w in G[curnode].items():
-            ncost = dist + w.get(weight, 1)
-            if neighbor in enqueued:
-                qcost, h = enqueued[neighbor]
-                if qcost <= ncost:
-                    continue
-            else:
-                h = heuristic(neighbor, target)
-
-            # wAstar
-            h = W * h
-            enqueued[neighbor] = ncost, h
-            push(queue, (ncost + h, next(c), neighbor, ncost, curnode))
-
-if __name__ == '__main__':
+def sample_astar_path():
     # s = (3, 3)
     # g = (9, 12)
     nodes = list(G.nodes())
@@ -118,3 +77,22 @@ if __name__ == '__main__':
         plt.tight_layout()
         plt.savefig("output/output_W{}.png".format(W), dpi=150)
         plt.close()
+
+
+if __name__ == '__main__':
+    nodes = list(G.nodes())
+    ids = np.random.randint(0, len(nodes))
+    idg = np.random.randint(0, len(nodes))
+    s = nodes[ids]
+    g = nodes[idg]
+    print(s, g)
+
+    def h(s1, s2):
+        return abs(s1[0] - s2[0]) + abs(s1[1] - s2[1])
+    
+    for W in [0, 1, 2, 3]:
+        t_start = time.time()
+        cost, path = astar_cost_search(G, s, g, heuristic=h, W=W)
+        t_search = time.time() - t_start
+        print(W, cost, t_search)
+        print(">", path)
